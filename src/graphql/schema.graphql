@@ -1,0 +1,63 @@
+scalar Email
+scalar DateTime
+
+type User {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  email: Email!
+  firstName: String!
+  lastName: String!
+}
+
+type Me {
+  id: ID!
+  email: Email!
+  firstName: String!
+  lastName: String!
+}
+
+type AuthTokens {
+  accessToken: String!
+  refreshToken: String!
+  expiredAt: DateTime!
+}
+
+input CreateUserInput {
+  email: Email!
+  password: String!
+  firstName: String!
+  lastName: String!
+}
+
+input SignInInput {
+  email: Email!
+  password: String!
+}
+
+input RefreshTokenInput {
+  refreshToken: String!
+}
+
+input ImpersonateUserInput {
+  userId: ID!
+  refreshToken: String!
+}
+
+input StopImpersonatingUserInput {
+  refreshToken: String!
+}
+
+type Query {
+  users: [User!]!
+  user(id: ID!): User!
+  me: Me!
+}
+
+type Mutation {
+  createUser(input: CreateUserInput!): User!
+  signIn(input: SignInInput!): AuthTokens!
+  refreshToken(input: RefreshTokenInput!): AuthTokens!
+  impersonateUser(input: ImpersonateUserInput!): AuthTokens!
+  stopImpersonatingUser(input: StopImpersonatingUserInput!): AuthTokens!
+}
