@@ -7,7 +7,7 @@ import { MessageEntity } from '../../entities/message/message';
 
 export function initCreateMessageRepository(db: Kysely<DB>) {
   return async (
-    id : string,
+    id: string,
     sessionId: string,
     source: string,
     message: string,

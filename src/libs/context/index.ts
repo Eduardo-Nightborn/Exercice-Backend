@@ -9,6 +9,7 @@ export type AppContext = {
   repositories: Repositories;
   gateways: Gateways;
   auth: AuthContext;
+  
 };
 
 type AuthContextUnauthenticated = {

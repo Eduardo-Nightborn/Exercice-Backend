@@ -13,7 +13,7 @@ export const initMessageRepositories = (db: Kysely<DB>) => {
   return {
     createMessage: initCreateMessageRepository(db),
     getAll: initGetAllMessagesRepository(db),
-    getById: initGetMessageByIdRepository(db , dataloaderByIds),
+    getById: initGetMessageByIdRepository(db, dataloaderByIds),
   };
 };
 

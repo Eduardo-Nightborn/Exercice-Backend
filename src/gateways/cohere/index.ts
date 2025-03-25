@@ -1,84 +1,83 @@
-import { CohereClient } from "cohere-ai";
 import { Config } from '../../libs/config';
 import Joi from 'joi';
 import { BadRequestError } from '../../entities/errors/bad-request-error';
 import { UnknownError } from '../../entities/errors/unknown-error';
 import { UnauthorizedError } from '../../entities/errors/unauthorized-error';
 
-// Define types
-type ChatRole = 'USER' | 'CHATBOT' | 'SYSTEM' | 'TOOL';
-
 interface ChatInput {
-  messages: {
-    role: string;
-    content: string;
-    toolCallId?: string;
-  }[];
+  message: string;
 }
 
+interface ChatResponse {
+  text?: string;
+  [key: string]: any;
+}
 
 export const initCohereGateway = (config: Config) => {
-  const cohereClient = new CohereClient({
-    token: config.cohere.cohereApiKey,
-  });
+  const apiKey = config.cohere.cohereApiKey;
+  const baseUrl = 'https://api.cohere.com/v2/chat';
 
-  const chat = async (input: ChatInput): Promise<any> => {
+  const chat = async (input: ChatInput): Promise<ChatResponse> => {
     validateInput(input);
 
-    // Convert role strings to Cohere's expected enum values
-    const mapRole = (role: string): ChatRole => {
-      switch (role.toLowerCase()) {
-        case 'user':
-          return 'USER';
-        case 'assistant':
-          return 'CHATBOT';
-        case 'system':
-          return 'SYSTEM';
-        case 'tool':
-          return 'TOOL';
-        default:
-          return 'USER'; // Default fallback
-      }
-    };
-
-    
-    const cohereMessages = input.messages.map((msg) => ({
-      role: mapRole(msg.role),
-      message: msg.content,
-      ...(msg.toolCallId && { tool_call_id: msg.toolCallId }),
-    }));
+    const { message } = input;
 
     try {
-      const response = await cohereClient.chat({
-        model: 'command-r-a-03-2025',
-        message: cohereMessages[cohereMessages.length - 1].message,
-        chatHistory: cohereMessages.slice(0, -1),
+      const response = await fetch(baseUrl, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          stream: false,
+          model: 'command-r',
+          messages: [
+            {
+              role: 'user',
+              content: message,
+            },
+          ],
+        }),
       });
 
-      return response;
-    } catch (err: any) {
-      const errorMessage = err.message || 'Error communicating with Cohere API';
+      if (!response.ok) {
+        const errorText = await response.text();
+        const errorMessage = errorText || 'Error communicating with Cohere API';
 
-      if (err.status) {
-        switch (err.status) {
+        switch (response.status) {
           case 400:
             throw new BadRequestError(
-              'Invalid request to Cohere API: ' + errorMessage,
+              `Invalid request to Cohere API: ${errorMessage}`,
             );
           case 401:
             throw new UnauthorizedError(
-              'Unauthorized access to Cohere API: ' + errorMessage,
+              `Unauthorized access to Cohere API: ${errorMessage}`,
             );
           case 403:
             throw new UnauthorizedError(
-              'Forbidden access to Cohere API: ' + errorMessage,
+              `Forbidden access to Cohere API: ${errorMessage}`,
             );
           default:
             throw new UnknownError(
-              'Error communicating with Cohere API: ' + errorMessage,
+              `Error communicating with Cohere API: ${errorMessage}`,
             );
         }
       }
+
+      const body: ChatResponse = await response.json();
+      return body;
+    } catch (err: any) {
+      if (
+        err instanceof BadRequestError ||
+        err instanceof UnauthorizedError ||
+        err instanceof UnknownError
+      ) {
+        throw err; 
+      }
+      throw new UnknownError(
+        `Unexpected error communicating with Cohere API: ${err.message}`,
+      );
     }
   };
 
@@ -87,16 +86,10 @@ export const initCohereGateway = (config: Config) => {
 
 function validateInput(input: ChatInput) {
   const messageSchema = Joi.object({
-    role: Joi.string().required(),
-    content: Joi.string().required(),
-    toolCallId: Joi.string().optional(),
+    message: Joi.string().required(),
   });
 
-  const schema = Joi.object({
-    messages: Joi.array().items(messageSchema).min(1).required(),
-  });
-
-  const { error } = schema.validate(input);
+  const { error } = messageSchema.validate(input);
   if (error) {
     throw new BadRequestError(error.message);
   }
