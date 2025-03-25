@@ -378,5 +378,7 @@ For managing and automating the updates of dependencies within the project, we u
 This configuration tells Renovate to check for updates every weekend, assign the PRs to a specific user, and label them for easier identification.
 
 By using **Renovate**, you can streamline the dependency management process in your project, ensuring that your application remains up-to-date, secure, and stable with minimal manual intervention. This automated approach allows your team to focus more on development and less on maintenance tasks.
+
 # Exercice-Backend
+
 # Exercice-Backend

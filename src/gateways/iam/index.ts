@@ -11,7 +11,6 @@ import { BusinessError } from '../../entities/errors/business-error';
 import { UnauthorizedError } from '../../entities/errors/unauthorized-error';
 import { AuthContext } from '../../libs/context';
 import { DecodedIdToken } from 'firebase-admin/lib/auth/token-verifier';
-
 type ImpersonateClaims =
   | {
       is_impersonating: true;
@@ -21,27 +20,25 @@ type ImpersonateClaims =
       is_impersonating: false;
       target_user_id: null;
     };
-
 export const initIAMGateway = (config: Config) => {
   // Init firebase admin
-  admin.initializeApp({
-    credential: admin.credential.cert({
-      projectId: config.firebase.projectId,
-      clientEmail: config.firebase.credentials.clientEmail,
-      privateKey: config.firebase.credentials.privateKey,
-    }),
-  });
-
+  // admin.initializeApp({
+  //   credential: admin.credential.cert({
+  //     projectId: config.firebase.projectId,
+  //     clientEmail: config.firebase.credentials.clientEmail,
+  //     privateKey: config.firebase.credentials.privateKey,
+  //   }),
+  // });
   // Init firebase client
-  const clientApp = client.initializeApp({
-    apiKey: config.firebase.client.apiKey,
-    authDomain: config.firebase.client.authDomain,
-    projectId: config.firebase.projectId,
-    storageBucket: config.firebase.client.storageBucket,
-    messagingSenderId: config.firebase.client.messagingSenderId,
-    appId: config.firebase.client.appId,
-  });
-
+  // const clientApp = client.initializeApp({
+  //   apiKey: config.firebase.client.apiKey,
+  //   authDomain: config.firebase.client.authDomain,
+  //   projectId: config.firebase.projectId,
+  //   storageBucket: config.firebase.client.storageBucket,
+  //   messagingSenderId: config.firebase.client.messagingSenderId,
+  //   appId: config.firebase.client.appId,
+  // });
+  const clientApp = undefined as any;
   const createUser = async (
     email: string,
     password: string,
@@ -54,7 +51,6 @@ export const initIAMGateway = (config: Config) => {
         emailVerified: true,
         displayName,
       });
-
       return user.uid;
     } catch (err: any) {
       if (err.code === 'auth/email-already-exists') {
@@ -63,7 +59,6 @@ export const initIAMGateway = (config: Config) => {
       throw new UnknownError(err.message, { email }, err.stack);
     }
   };
-
   const signIn = async (
     email: string,
     password: string,
@@ -75,11 +70,9 @@ export const initIAMGateway = (config: Config) => {
         email,
         password,
       );
-
       if (!user.emailVerified) {
         throw new BadRequestError('Email not verified', { email });
       }
-
       const { token, expirationTime } = await user.getIdTokenResult();
       return {
         accessToken: token,
@@ -103,7 +96,6 @@ export const initIAMGateway = (config: Config) => {
       }
     }
   };
-
   const getAuthAndValidateToken = async (
     accessToken: string,
   ): Promise<AuthContext> => {
@@ -119,7 +111,6 @@ export const initIAMGateway = (config: Config) => {
           impersonatorExternalId: decodedToken.uid,
         };
       }
-
       return {
         isAuthenticated: true,
         isImpersonating: false,
@@ -146,14 +137,12 @@ export const initIAMGateway = (config: Config) => {
       }
     }
   };
-
   const _refreshToken = async (
     refreshToken: string,
   ): Promise<AuthTokensEntity> => {
     const params = new URLSearchParams();
     params.append('grant_type', 'refresh_token');
     params.append('refresh_token', refreshToken);
-
     const response = await fetch(
       `https://securetoken.googleapis.com/v1/token?key=${config.firebase.client.apiKey}`,
       {
@@ -180,20 +169,16 @@ export const initIAMGateway = (config: Config) => {
           throw new UnknownError(error.message);
       }
     }
-
     const data = await response.json();
     const { id_token, refresh_token, expires_in } = data;
-
     const expiredAt = new Date();
     expiredAt.setSeconds(expiredAt.getSeconds() + Number(expires_in));
-
     return {
       accessToken: id_token,
       refreshToken: refresh_token,
       expiredAt,
     };
   };
-
   const impersonateUser = async (
     auth: AuthContext,
     refreshToken: string,
@@ -202,7 +187,6 @@ export const initIAMGateway = (config: Config) => {
     if (!auth.isAuthenticated) {
       throw new UnauthorizedError('User not authenticated');
     }
-
     try {
       const claims: ImpersonateClaims = {
         is_impersonating: true,
@@ -220,7 +204,6 @@ export const initIAMGateway = (config: Config) => {
       }
     }
   };
-
   const stopImpersonatingUser = async (
     auth: AuthContext,
     refreshToken: string,
@@ -231,7 +214,6 @@ export const initIAMGateway = (config: Config) => {
     if (!auth.isImpersonating) {
       throw new UnauthorizedError('User not impersonating');
     }
-
     try {
       const claims: ImpersonateClaims = {
         is_impersonating: false,
@@ -260,5 +242,4 @@ export const initIAMGateway = (config: Config) => {
     stopImpersonatingUser,
   };
 };
-
 export type IAMGateway = ReturnType<typeof initIAMGateway>;

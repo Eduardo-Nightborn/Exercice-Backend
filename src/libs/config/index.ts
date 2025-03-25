@@ -47,6 +47,9 @@ export const config = {
     apiKey: process.env.BREVO_API_KEY ?? '',
     sandbox: process.env.BREVO_SANDBOX === 'true',
   },
+  cohere: {
+    cohereApiKey: process.env.COHERE_API_KEY ?? '',
+  },
 } as const;
 
 export type Config = typeof config;

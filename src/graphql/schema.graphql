@@ -48,10 +48,20 @@ input StopImpersonatingUserInput {
   refreshToken: String!
 }
 
+type Message {
+  id: ID!
+  sessionId: String
+  source: String!
+  message: String!
+  sentAt: DateTime!
+}
+
 type Query {
   users: [User!]!
   user(id: ID!): User!
   me: Me!
+  messages: [Message!]!
+  message(messageId: ID!): Message!
 }
 
 type Mutation {
@@ -60,4 +70,5 @@ type Mutation {
   refreshToken(input: RefreshTokenInput!): AuthTokens!
   impersonateUser(input: ImpersonateUserInput!): AuthTokens!
   stopImpersonatingUser(input: StopImpersonatingUserInput!): AuthTokens!
+  createMessage(userMessage: String!): Message!
 }

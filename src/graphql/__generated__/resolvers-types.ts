@@ -6,6 +6,7 @@ import {
 import { UserEntity } from '../../entities/user/user';
 import { MeEntity } from '../../entities/auth/me';
 import { AuthTokensEntity } from '../../entities/auth/auth-tokens';
+import { MessageEntity } from '../../entities/message/message';
 import { AppContext } from '../../libs/context';
 export type Maybe<T> = T | null;
 export type InputMaybe<T> = Maybe<T>;
@@ -68,13 +69,27 @@ export type Me = {
   lastName: Scalars['String']['output'];
 };
 
+export type Message = {
+  __typename?: 'Message';
+  id: Scalars['ID']['output'];
+  message: Scalars['String']['output'];
+  sentAt: Scalars['DateTime']['output'];
+  sessionId?: Maybe<Scalars['String']['output']>;
+  source: Scalars['String']['output'];
+};
+
 export type Mutation = {
   __typename?: 'Mutation';
+  createMessage: Message;
   createUser: User;
   impersonateUser: AuthTokens;
   refreshToken: AuthTokens;
   signIn: AuthTokens;
   stopImpersonatingUser: AuthTokens;
+};
+
+export type MutationCreateMessageArgs = {
+  userMessage: Scalars['String']['input'];
 };
 
 export type MutationCreateUserArgs = {
@@ -100,8 +115,14 @@ export type MutationStopImpersonatingUserArgs = {
 export type Query = {
   __typename?: 'Query';
   me: Me;
+  message: Message;
+  messages: Array<Message>;
   user: User;
   users: Array<User>;
+};
+
+export type QueryMessageArgs = {
+  messageId: Scalars['ID']['input'];
 };
 
 export type QueryUserArgs = {
@@ -249,6 +270,7 @@ export type ResolversTypes = ResolversObject<{
   ID: ResolverTypeWrapper<Scalars['ID']['output']>;
   ImpersonateUserInput: ImpersonateUserInput;
   Me: ResolverTypeWrapper<MeEntity>;
+  Message: ResolverTypeWrapper<MessageEntity>;
   Mutation: ResolverTypeWrapper<{}>;
   Query: ResolverTypeWrapper<{}>;
   RefreshTokenInput: RefreshTokenInput;
@@ -268,6 +290,7 @@ export type ResolversParentTypes = ResolversObject<{
   ID: Scalars['ID']['output'];
   ImpersonateUserInput: ImpersonateUserInput;
   Me: MeEntity;
+  Message: MessageEntity;
   Mutation: {};
   Query: {};
   RefreshTokenInput: RefreshTokenInput;
@@ -309,11 +332,34 @@ export type MeResolvers<
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
+export type MessageResolvers<
+  ContextType = AppContext,
+  ParentType extends
+    ResolversParentTypes['Message'] = ResolversParentTypes['Message'],
+> = ResolversObject<{
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  sentAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  sessionId?: Resolver<
+    Maybe<ResolversTypes['String']>,
+    ParentType,
+    ContextType
+  >;
+  source?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
 export type MutationResolvers<
   ContextType = AppContext,
   ParentType extends
     ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation'],
 > = ResolversObject<{
+  createMessage?: Resolver<
+    ResolversTypes['Message'],
+    ParentType,
+    ContextType,
+    RequireFields<MutationCreateMessageArgs, 'userMessage'>
+  >;
   createUser?: Resolver<
     ResolversTypes['User'],
     ParentType,
@@ -352,6 +398,17 @@ export type QueryResolvers<
     ResolversParentTypes['Query'] = ResolversParentTypes['Query'],
 > = ResolversObject<{
   me?: Resolver<ResolversTypes['Me'], ParentType, ContextType>;
+  message?: Resolver<
+    ResolversTypes['Message'],
+    ParentType,
+    ContextType,
+    RequireFields<QueryMessageArgs, 'messageId'>
+  >;
+  messages?: Resolver<
+    Array<ResolversTypes['Message']>,
+    ParentType,
+    ContextType
+  >;
   user?: Resolver<
     ResolversTypes['User'],
     ParentType,
@@ -380,6 +437,7 @@ export type Resolvers<ContextType = AppContext> = ResolversObject<{
   DateTime?: GraphQLScalarType;
   Email?: GraphQLScalarType;
   Me?: MeResolvers<ContextType>;
+  Message?: MessageResolvers<ContextType>;
   Mutation?: MutationResolvers<ContextType>;
   Query?: QueryResolvers<ContextType>;
   User?: UserResolvers<ContextType>;

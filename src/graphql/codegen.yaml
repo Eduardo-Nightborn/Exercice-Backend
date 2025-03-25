@@ -16,3 +16,4 @@ generates:
         User: '../../entities/user/user#UserEntity'
         Me: '../../entities/auth/me#MeEntity'
         AuthTokens: '../../entities/auth/auth-tokens#AuthTokensEntity'
+        Message: '../../entities/message/message#MessageEntity'

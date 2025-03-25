@@ -28,6 +28,7 @@ services:
       - FIREBASE_CLIENT_APP_ID=${FIREBASE_CLIENT_APP_ID}
       - BREVO_API_KEY=${BREVO_API_KEY}
       - BREVO_SANDBOX=${BREVO_SANDBOX}
+      - COHERE_API_KEY=${COHERE_API_KEY}
     volumes:
       - ./src:/usr/src/app/src
     depends_on:

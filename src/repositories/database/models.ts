@@ -7,6 +7,14 @@ export type Generated<T> =
 
 export type Timestamp = ColumnType<Date, Date | string, Date | string>;
 
+export interface Messages {
+  id: string;
+  message: string;
+  sent_at: Generated<Timestamp>;
+  sessionId: string | null;
+  source_message: string;
+}
+
 export interface Users {
   created_at: Generated<Timestamp>;
   deleted_at: Timestamp | null;
@@ -20,5 +28,6 @@ export interface Users {
 }
 
 export interface DB {
+  messages: Messages;
   users: Users;
 }
